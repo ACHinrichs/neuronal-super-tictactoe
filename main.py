@@ -37,6 +37,8 @@ class HumanPlayer(Player):
             self.out.refresh()
             if ( not Board.validMove(board,Coordinate(key1-ord('1'),key2-ord('1')))):
                 self.out.addstr(14,5,"INVALID MOVE")
+                key1=ord('0')
+                key2=ord('0')
             else:
                 self.out.addstr(14,5,"OK!")
         return Coordinate(key1-ord('1'),key2-ord('1'))

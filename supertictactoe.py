@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 
+
+PN_NO_PLAYER = -1
+PN_TIE = 42
+
 # A single coordinate.
 class Coordinate: 
     def __init__(self,tl,bl):
@@ -47,6 +51,8 @@ class Board:
             return "0"
         if p == -1:
             return "X"
+        if p == 42:
+            return "-"
         return " "
                     
     @staticmethod
@@ -57,7 +63,7 @@ class Board:
         res = res and (b.won[m.topLevel]==0)
         # last BL is current TL, except for first move and if last bl-tl is taken 
         res = res and (b.lastMove.bottomLevel==m.topLevel or b.lastMove.bottomLevel==-1
-                       or b.field[b.lastMove.bottomLevel]!=0)
+                       or b.won[b.lastMove.bottomLevel]!=0)
         # field is unused
         res = res and (b.field[m.topLevel][m.bottomLevel]==0)
         return res
@@ -72,42 +78,51 @@ class Board:
     def hasWinner(self):
         for i in range(9):
             winner = self.tttWinner(self.field[i])
-            if winner != -1:
+            if winner != PN_NO_PLAYER:
                 self.won[i]=self.playerToEntry(winner)
         return self.tttWinner(self.won)
 
-    # converts the entry to the player Number, because of simplicity the entrys are -1 and 1, while the playernumbers are 0 and 1
+    # converts the entry to the player Number, because of simplicity the entrys are -1 and 1, while the playernumbers are 0 and 1. Player -1 is tie and displayed as 42
     @staticmethod
     def entryToPlayer(entry):
             if entry == 1:
                 return 0
             if entry ==-1:
                 return 1
-            return -1
+            if entry == 42:
+                return PN_TIE
+            return PN_NO_PLAYER
             
-    # converts the entry to the player Number, because of simplicity the entrys are -1 and 1, while the playernumbers are 0 and 1
+    # converts the entry to the player Number, because of simplicity the entrys are -1 and 1, while the playernumbers are 0 and 1. Player -1 is tie and displayed as 42
     @staticmethod
     def playerToEntry(playerNum):
             if playerNum == 0:
-                return 1
+                return  1
             if playerNum == 1:
-                return-1
+                return -1
+            if playerNum ==PN_TIE:
+                return 42
+            return 0
             
     # Evaluates the winner of a tictactoe field
     @staticmethod
     def tttWinner(tttboard):
+        full = False
         for i in range(3):
-            row=Board.entryToPlayer((tttboard[i*3] + tttboard[i*3 + 1] + tttboard[i*3 + 2])/3)
-            if row != -1:
-                return row
-            column=Board.entryToPlayer((tttboard[0+i] + tttboard[3+i] + tttboard[4+i])/3)
-            if column != -1:
-                return column
-        cross = Board.entryToPlayer((tttboard[0] + tttboard[4] + tttboard[8])/3)
-        if cross != -1:
-            return cross
-        cross = Board.entryToPlayer((tttboard[6] + tttboard[4] + tttboard[2])/3)
-        return cross
+            row=(tttboard[i*3] == tttboard[i*3 + 1] == tttboard[i*3 + 2])
+            full = full and tttboard[i*3]!=0 and tttboard[i*3 + 1]!=0 and tttboard[i*3 + 2]!=0
+            if row:
+                return Board.entryToPlayer(tttboard[i*3])
+            column=(tttboard[0+i] == tttboard[3+i] == tttboard[6+i])
+            if column:
+                return  Board.entryToPlayer(tttboard[0+i])
+        cross = (tttboard[0] == tttboard[4] == tttboard[8] or
+                 tttboard[6] == tttboard[4] == tttboard[2])
+        if cross:
+            return Board.entryToPlayer(tttboard[4])
+        if full:
+            return PN_TIE
+        return PN_NO_PLAYER
     
 # Abstract Base Class for Players
 class Player(ABC):
