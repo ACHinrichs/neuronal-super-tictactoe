@@ -1,5 +1,6 @@
 from supertictactoe import Player, Game, Board, Coordinate
 import curses
+from lnn import LayerNeuralNetwork as lnn
 
 class HumanPlayer(Player):
     pass
@@ -43,6 +44,20 @@ class HumanPlayer(Player):
                 self.out.addstr(14,5,"OK!")
         return Coordinate(key1-ord('1'),key2-ord('1'))
 
+class ConmputerPlayer(Player):
+    pass
+    def __init__(self, aNumber):
+        self.number = aNumber
+
+    def won(self):
+        #lnn.updateNet()
+
+    def lost(self):
+        lnn.updateNet()
+
+    def move(self, board):
+        move = lnn.move();
+        return Coordinate(move[0], move[1])
 
 # Init curse
 stdscr = curses.initscr()
