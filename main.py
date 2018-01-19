@@ -1,5 +1,5 @@
 from supertictactoe import Player, Game, Board, Coordinate
-import curses
+#import curses
 from lnn import LayerNeuralNetwork as lnn
 
 class HumanPlayer(Player):
@@ -50,6 +50,7 @@ class ConmputerPlayer(Player):
         self.number = aNumber
 
     def won(self):
+        pass
         #lnn.updateNet()
 
     def lost(self):

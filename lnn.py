@@ -1,8 +1,26 @@
 import numpy as np
 import supertictactoe as st
+from supertictactoe import Player
+import main
+
+class ConmputerPlayer(Player):
+    pass
+    def __init__(self, aNumber):
+        self.number = aNumber
+
+    def won(self):
+        pass
+        #lnn.updateNet()
+
+    def lost(self):
+        lnn.updateNet()
+
+    def move(self, board):
+        move = lnn.move();
+        return Coordinate(move[0], move[1])
 
 class LayerNeuralNetwork():
-    
+    move_count = 0
     def nonlin(x, deriv=False):
         moves
         if(deriv==True):
@@ -11,8 +29,8 @@ class LayerNeuralNetwork():
    
 
     def trainNetwork(self):
-        p1 = st.ComputerPlayer(1)
-        p2 = st.ComputerPlayer(2)
+        p1 = ComputerPlayer(1)
+        p2 = ComputerPlayer(2)
         
         for i in range(100):
             game = Game(p1,p2)
@@ -22,72 +40,36 @@ class LayerNeuralNetwork():
         x1 = m.index(max(m))
         m[x1] = 0
         x2 = m.index(max(m))
-        moves.append((x1,x2))
-        return st.Coordinate(x1, x2)
+        moves.append((x1,x2, board))
+        move_count += 1
+        return [x1, x2]
 
     def updateNet(self):
         move = 0
-        for x,y in moves:
-            move ++;
-            l0 = X
-            l1 = nonlin(np.dot(l0,syn0))
-
+        for x,y,board in moves:
+            move += 1;
             # how much did we miss?
-            l1_error = y - l1
             
+            impact = move_count - move
             # multiply how much we missed by the 
             # slope of the sigmoid at the values in l1
-            l1_delta = move * nonlin(l1,True)
+            l1_delta = impact * nonlin(l1,True)
             
             # update weights
-            syn0 += np.dot(l0.T,l1_delta)
-    
-# input dataset
-X = np.array([  [0,0,1],
-                [0,1,1],
-                [1,0,1],
-                [1,1,1],
-                [1,1,0]])
-# output dataset            
-y = np.array([[0,0,1,1,0]]).T
+            syn0 += np.dot(board.T,l1_delta)
 
+            
 # seed random numbers to make calculation
-# deterministic (just a good practice)
+# deterministic
 np.random.seed(1)
 
 # initialize weights randomly with mean 0
-syn0 = 2*np.random.random((3,1)) - 1
+syn0 = 2*np.random.random((81,1)) - 1
 print(syn0)
-    
-for iter in range(100):
 
-    # forward propagation
-    l0 = X
-    l1 = nonlin(np.dot(l0,syn0))
+lnn = LayerNeuralNetwork()
+lnn.trainNetwork()
 
-    # how much did we miss?
-    l1_error = y - l1
-
-    # multiply how much we missed by the 
-    # slope of the sigmoid at the values in l1
-    l1_delta = l1_error * nonlin(l1,True)
-
-    # update weights
-    syn0 += np.dot(l0.T,l1_delta)
-
-X_ = np.array([[1,1,1], [0,1,1], 
-               [1,1,0], [1,0,0], 
-               [1,0,0], [0,0,1]])
-
-y_ = np.array([[1, 0, 1, 1, 1, 0]]).T
-
-l0 = X_
-l1 = nonlin(np.dot(l0,syn0))
-
-
-
-print ("Testergebnisse: ")
-print (l1)
 print ("Neuronales Netz 1: ")
 print (syn0)
 print (nonlin(np.dot([1,1,0], syn0)))
