@@ -18,11 +18,17 @@ class LayerNeuralNetwork():
             game = Game(p1,p2)
             
     def move(self, board):
-        nonlin(np.dot(board, syn0))
+        m = nonlin(np.dot(board, syn0))
+        x1 = m.index(max(m))
+        m[x1] = 0
+        x2 = m.index(max(m))
+        moves.append((x1,x2))
+        return st.Coordinate(x1, x2)
 
     def updateNet(self):
         move = 0
         for x,y in moves:
+            move ++;
             l0 = X
             l1 = nonlin(np.dot(l0,syn0))
 
@@ -31,7 +37,7 @@ class LayerNeuralNetwork():
             
             # multiply how much we missed by the 
             # slope of the sigmoid at the values in l1
-            l1_delta = l1_error * nonlin(l1,True)
+            l1_delta = move * nonlin(l1,True)
             
             # update weights
             syn0 += np.dot(l0.T,l1_delta)
