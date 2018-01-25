@@ -159,9 +159,12 @@ class Game:
                 self.board.mark(move,player)
             else:
                 self.end((player+1)%2)
+                playing = False
+                return
             winner = self.board.hasWinner()
             if winner != -1:
                 self.end(winner)
+                playing = False
                 return
             player=(player+1) % 2
 

@@ -13,11 +13,9 @@ class ComputerPlayer(Player):
 
     def won(self):
         #pass
-        print("WON")
         self.nw.updateNet(0, self.moves, self.number)
 
     def lost(self):
-        print("LOST")
         self.nw.updateNet(1, self.moves, self.number)
 
     def move(self, board):
@@ -109,15 +107,14 @@ lnn = LayerNeuralNetwork()
 
 # train Network
 
-for i in range(10000):
-    if(i % 100 == 0):
-        print(i)
-        p1 = ComputerPlayer(1,lnn)
-        p2 = ComputerPlayer(2,lnn)
-        game = st.Game(p1,p2)
-        game.play()
+for i in range(100000):
+    p1 = ComputerPlayer(1,lnn)
+    p2 = ComputerPlayer(2,lnn)
+    game = Game(p1,p2)
+    print(i)
+    game.play()
+    print(i)
 
-        
 lnn.printNet()
 
 #print (nonlin(np.dot([1,1,0], syn0)))
