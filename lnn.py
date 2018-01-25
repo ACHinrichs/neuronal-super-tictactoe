@@ -16,6 +16,7 @@ class ComputerPlayer(Player):
         self.nw.updateNet(0, self.moves, self.number)
 
     def lost(self):
+        print(str(len(self.moves))+ " \t"+str(self.number))
         self.nw.updateNet(1, self.moves, self.number)
 
     def move(self, board):
@@ -28,12 +29,20 @@ class LayerNeuralNetwork():
 
     def __init__(self):
         # initialize weights randomly with mean 0
-        self.syn0 = 2*np.random.random((9,9)) - 1
-        self.syn1 = 2*np.random.random((9,81)) -1
+        self.syn0 = 2*np.random.random((9,81)) - 1
+        self.syn1 = 2*np.random.random((81,81)) -1
         self.syn2 = 2*np.random.random((81,81))-1
         self.syn3 = 2*np.random.random((81,1)) -1
 
         pass
+
+    def boardToInput(self, board):
+        out = board.field
+        nextTL = [0,0,0,0,0,0,0,0,0]
+        nextTL[board.lastMove.bottomLevel]=1
+        #print(nextTL)
+        out.append(nextTL)
+        return np.array(out)
     
     def nonlin(self, x, deriv=False):
         if(deriv==True):
@@ -44,7 +53,7 @@ class LayerNeuralNetwork():
         # Network makes a
         # l0 = board
         # board = board.field
-        l1 = self.nonlin(np.dot(board.field, self.syn0))
+        l1 = self.nonlin(np.dot(self.boardToInput(board), self.syn0))
         l2 = self.nonlin(np.dot(l1, self.syn1))
         l3 = self.nonlin(np.dot(l2, self.syn2))
         l4 = self.nonlin(np.dot(l3, self.syn3))
@@ -59,7 +68,7 @@ class LayerNeuralNetwork():
         move = 0
         for x,y,board in moves:
             # forward propagation
-            l0 = np.array(board.field)
+            l0 = self.boardToInput(board)
             l1 = self.nonlin(np.dot(l0, self.syn0))
             l2 = self.nonlin(np.dot(l1, self.syn1))
             l3 = self.nonlin(np.dot(l2, self.syn2))
@@ -107,13 +116,12 @@ lnn = LayerNeuralNetwork()
 
 # train Network
 
-for i in range(100000):
+for i in range(10000):
     p1 = ComputerPlayer(1,lnn)
     p2 = ComputerPlayer(2,lnn)
     game = Game(p1,p2)
-    print(i)
     game.play()
-    print(i)
+    #print(i)
 
 lnn.printNet()
 
