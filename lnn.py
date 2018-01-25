@@ -29,7 +29,7 @@ class LayerNeuralNetwork():
 
     def __init__(self):
         # initialize weights randomly with mean 0
-        self.syn0 = 2*np.random.random((9,81)) - 1
+        self.syn0 = 2*np.random.random((90,81)) - 1
         self.syn1 = 2*np.random.random((81,81)) -1
         self.syn2 = 2*np.random.random((81,81))-1
         self.syn3 = 2*np.random.random((81,1)) -1
@@ -39,9 +39,18 @@ class LayerNeuralNetwork():
     def boardToInput(self, board, playerNumber):
         out = board.field[:] #Copy List!
         out.append([0,0,0,0,0,0,0,0,0])
-        outArray = Board.playerToEntry(playerNumber) * np.array(out)
-        if(not board.lastMove.bottomLevel == -1):
-            outArray[9,board.lastMove.bottomLevel]=1
+        outArray =np.zeros((1,90))
+        playerSymb = Board.playerToEntry(playerNumber)
+        x=0
+        for row in out:
+            y=0
+            for entry in row:
+                if(x<9):
+                    outArray[0,x*9+y]=entry*playerSymb
+                else:
+                    outArray[0,x*9+y]=entry
+                y=y+1
+            x=x+1
         return outArray
     
     def nonlin(self, x, deriv=False):
