@@ -20,10 +20,14 @@ class ComputerPlayer(Player):
         
 
 class LayerNeuralNetwork():
-    move_count = 0
-    movesP1 = []
-    movesP2 = []
-    def nonlin(x, deriv=False):
+
+    def __init__(self):
+        move_count = 0
+        movesP1 = []
+        movesP2 = []
+        
+    
+    def nonlin(self, x, deriv=False):
         if(deriv==True):
             return x*(1-x)
         return 1/(1+np.exp(-x))
@@ -37,16 +41,18 @@ class LayerNeuralNetwork():
             if(i % 100 == 0):
                 print(i)
             game = st.Game(p1,p2)
+            game.play()
             
     def move(self, board, playerNumber):
         # Network makes a
         # l0 = board
-        l1 = nonlin(np.dot(board, syn0))
-        l2 = nonlin(np.dot(l1, syn1))
-        l3 = nonlin(np.dot(l2, syn2))
-        l4 = nonlin(np.dot(l3, syn3))
+        board = board.field
+        l1 = self.nonlin(np.dot(board, syn0))
+        l2 = self.nonlin(np.dot(l1, syn1))
+        l3 = self.nonlin(np.dot(l2, syn2))
+        l4 = self.nonlin(np.dot(l3, syn3))
         
-        x = m.index(max(l4))
+        x = l4.tolist().index(max(l4))
         
         x1 = x // 9
         x2 = x % 9
@@ -101,8 +107,8 @@ np.random.seed(1)
 
 # initialize weights randomly with mean 0
 syn0 = 2*np.random.random((9,9)) - 1
-syn1 = 2*np.random.random((81,81)) -1
-syn2 = 2*np.random.random((81,9)) -1
+syn1 = 2*np.random.random((9,81)) -1
+syn2 = 2*np.random.random((81,81)) -1
 syn3 = 2*np.random.random((81,1))-1
 print(syn0)
 
