@@ -64,36 +64,44 @@ class LayerNeuralNetwork():
         return Coordinate(x1, x2)
 
     def updateNet(self, lost, moves, playerNumber):
-        move = 0
+        i=0
         for x,y,board in moves:
-            # forward propagation
-            l0 = self.boardToInput(board, playerNumber)
-            l1 = self.nonlin(np.dot(l0, self.syn0))
-            l2 = self.nonlin(np.dot(l1, self.syn1))
-            l3 = self.nonlin(np.dot(l2, self.syn2))
-            l4 = self.nonlin(np.dot(l3, self.syn3))
+            i=i+1
+            # forward propagation (has to be recalculated, because we already adapted the network!
+            coord = self.move(board,playerNumber)
+
+            penality = (lost*2 - 1) * (i / len(moves)) # Is 1 if move is losing and -1 if move is winning move
             
-            # how much did we miss?
-            l4_error = lost - l4
+            #Propagate Backwards to evaluate how much I have to adapt the network
+            l4 = np.zeros((1,81))
+            l4[0][coord.topLevel*9+coord.bottomLevel]=1
+            l4_delta = penality * l4 * 0.5
             
-            # multiply how much we missed by the 
-            # slope of the sigmoid at the values in l1
-            l4_delta = l4_error * self.nonlin(l4,deriv=True)
+            
+            l3 = self.nonlin(np.dot(l4,np.linalg.inv(self.syn3)))
+            print(l3.shape)
+            l3_delta = penality * l3 * 0.25
 
-            l3_error = l4_delta.dot(self.syn3.T)
-            l3_delta = l3_error * self.nonlin(l3, deriv=True)
-
-            l2_error = l3_delta.dot(self.syn2.T)
-            l2_delta = l2_error * self.nonlin(l2, deriv=True)
-
-            l1_error = l2_delta.dot(self.syn1.T)
-            l1_delta = l1_error * self.nonlin(l1, deriv=True)
+            l2 = self.nonlin(np.dot(l3,self.syn2))
+            l2_delta = penality * l2 * 0.125
+            
+            l1 = self.nonlin(np.dot(l2,self.syn1))
+            l1_delta = penality * l1 * 0.0625
+            print(l3)
+            
+            #l0 = self.nonlin(np.dot(self.syn0,l1))
+            #l0_delta = penality * l0 * 0.125
+            #print(l3)
             
             # update weights
-            self.syn3 += np.dot(l3.T,l4_delta)
-            self.syn2 += np.dot(l2.T,l3_delta)
-            self.syn1 += np.dot(l1.T,l2_delta)
-            self.syn0 += np.dot(l0.T,l1_delta)
+            self.syn3 += l3_delta
+            self.syn2 += l3_delta
+            self.syn1 += l2_delta
+            self.syn0 += l1_delta
+            #self.syn3 += np.dot(l3.T,l3_delta)
+            #self.syn2 += np.dot(l2.T,l3_delta)
+            #self.syn1 += np.dot(l1.T,l2_delta)
+            #self.syn0 += np.dot(l0.T,l1_delta)
 
     def printNet(self):
         print ("Synapse 0: ")
