@@ -44,24 +44,8 @@ class HumanPlayer(Player):
                 self.out.addstr(14,5,"OK!")
         return Coordinate(key1-ord('1'),key2-ord('1'))
 
-class ConmputerPlayer(Player):
-    pass
-    def __init__(self, aNumber):
-        self.number = aNumber
-
-    def won(self):
-        pass
-        #lnn.updateNet()
-
-    def lost(self):
-        lnn.updateNet()
-
-    def move(self, board):
-        move = lnn.move();
-        return Coordinate(move[0], move[1])
-
 # Init curse
-stdscr = curses.initscr()
+"""stdscr = curses.initscr()
 curses.noecho()
 curses.cbreak()
 stdscr.keypad(1)
@@ -85,4 +69,4 @@ stdscr.getkey()
 curses.nocbreak()
 stdscr.keypad(False)
 curses.echo()
-curses.endwin()
+curses.endwin()"""

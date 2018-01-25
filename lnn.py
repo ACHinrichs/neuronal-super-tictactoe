@@ -1,27 +1,28 @@
 import numpy as np
 import supertictactoe as st
 from supertictactoe import Player
-import main
 
-class ConmputerPlayer(Player):
-    pass
+class ComputerPlayer(Player):
     def __init__(self, aNumber):
         self.number = aNumber
 
     def won(self):
         #pass
-        lnn.updateNet(0)
+        print("WON")
+        lnn.updateNet(0, self.number)
 
     def lost(self):
-        lnn.updateNet(1)
+        print("LOST")
+        lnn.updateNet(1, self.number)
 
     def move(self, board):
-        move = lnn.move();
-        return Coordinate(move[0], move[1])
+        return lnn.move(board, self.number);
+        
 
 class LayerNeuralNetwork():
     move_count = 0
-    moves = []
+    movesP1 = []
+    movesP2 = []
     def nonlin(x, deriv=False):
         if(deriv==True):
             return x*(1-x)
@@ -32,11 +33,12 @@ class LayerNeuralNetwork():
         p1 = ComputerPlayer(1)
         p2 = ComputerPlayer(2)
         
-        for i in range(100):
-            print(i)
-            game = Game(p1,p2)
+        for i in range(10000):
+            if(i % 100 == 0):
+                print(i)
+            game = st.Game(p1,p2)
             
-    def move(self, board):
+    def move(self, board, playerNumber):
         # Network makes a
         # l0 = board
         l1 = nonlin(np.dot(board, syn0))
@@ -48,13 +50,19 @@ class LayerNeuralNetwork():
         
         x1 = x // 9
         x2 = x % 9
-        moves.append((x1,x2, board))
+        if(playerNumber == 1):
+            movesP1.append((x1,x2, board))
+        else:
+            movesP2.append((x1,x2, board))
         move_count += 1
         return Coordinate(x1, x2)
 
-    def updateNet(self, lost):
-
-
+    def updateNet(self, lost, moves, PlayerNumber):
+        if(playerNumber == 1):
+            moves = movesP1
+        else:
+            moves = movesP2
+            
         move = 0
         for x,y,board in moves:
             # forward propagation
@@ -101,7 +109,13 @@ print(syn0)
 lnn = LayerNeuralNetwork()
 lnn.trainNetwork()
 
-print ("Neuronales Netz 1: ")
+print ("Synapse 0: ")
 print (syn0)
+print ("Synapse 1: ")
+print (syn1)
+print ("Synapse 2: ")
+print (syn2)
+print ("Synapse 3: ")
+print (syn3)
 #print (nonlin(np.dot([1,1,0], syn0)))
 
