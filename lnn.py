@@ -4,7 +4,7 @@
 import numpy as np
 import supertictactoe as st
 from supertictactoe import Player, Game, Coordinate, Board
-LOG_LEVEL = 0
+LOG_LEVEL = 1
 
 
 def log(out, level=1):
@@ -33,13 +33,24 @@ class ComputerPlayer(Player):
 
 class LayerNeuralNetwork():
 
-    def __init__(self):
-        #TODO
+    # Number of neurons takes a list with the number of neurons (not connections between them!) including the input and output layer.
+    # All layers are vectors!
+    def __init__(self,numberOfNeurons):
+        self.syn = []
+        for i in range(1,len(numberOfNeurons)):
+            self.syn.append(2*np.random.rand(numberOfNeurons[i],numberOfNeurons[i-1])-1)
+        self.numOut = numberOfNeurons[len(numberOfNeurons)-1]
+        self.numIn  = numberOfNeurons[0]
 
     def boardToInput(self, board, playerNumber):
         out = board.field[:] #Copy List!
         out.append([0,0,0,0,0,0,0,0,0])
-        outArray =np.zeros(90)
+        if(board.lastMove == Coordinate(-1,-1)):
+            out[9] = [1,1,1,1,1,1,1,1,1]
+        else:
+            out[9][board.lastMove.bottomLevel] = 1
+
+        outArray =np.zeros((90,1))
         playerSymb = Board.playerToEntry(playerNumber)
         x=0
         for row in out:
@@ -53,21 +64,47 @@ class LayerNeuralNetwork():
             x=x+1
         return outArray
         
-    
-    def nonlin(self, x, deriv=False):
-        #return np.arctan(x)
-        if(deriv==True):
-            return x*(1-x)
+    def neuronActivation(self,x):
+        #For sigmoid-Neurons
         return 1/(1+np.exp(-x))
-            
+    
     def move(self, board, playerNumber):
-        #TODO
+        neurons = self.boardToInput(board, playerNumber)
+        log("move "+str(neurons.shape),2)
+        for layer in self.syn:
+            neurons = self.neuronActivation(np.dot(layer, neurons))
+            log("move "+str(neurons.shape),2)
+        active = neurons.tolist().index(max(neurons))
+        return Coordinate( active// 9, active %9)
 
     def updateNet(self, lost, moves, playerNumber):
-        #TODO
+        for x,y,board in moves:
+            # FIrst calculate how the net would move, because it could have been updated
+            newMove = self.move(board,playerNumber)
+            if not newMove == Coordinate(x,y):
+                # If they are not equal, we have already altered the network a lot, so that every new alteration could make it worse
+                return
 
+            # Create idealize move
+            neurons = np.zeros((self.numOut,1))
+            neurons[x*9+y] = 1
+            log("update "+str(neurons.shape),2)
+            # Propagate the move backwards
+            #Iterate backwards over syns
+            for layer in self.syn[::-1]:
+                neuronsLower = self.neuronActivation(np.dot(layer.T,neurons))
+                
+                # Adapt layer network
+                log("update n"+str(neurons.shape),2)
+                log("update l"+str(neuronsLower.shape),2)
+                log(neuronsLower, 3)
+                layer = np.dot(neurons,neuronsLower.T)
+                
+                neurons = neuronsLower
+        
     def printNet(self):
-        #TODO
+        for layer in self.syn:
+            print(layer)
 
 
 # seed random numbers to make calculation
@@ -75,11 +112,11 @@ class LayerNeuralNetwork():
 np.random.seed(1)
 
 
-lnn = LayerNeuralNetwork()
+lnn = LayerNeuralNetwork([90, 90*81, 81*81, 81])
 
 # train Network
 
-for i in range(1000):
+for i in range(100):
     p1 = ComputerPlayer(0,lnn)
     p2 = ComputerPlayer(1,lnn)
     game = Game(p1,p2)

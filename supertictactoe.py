@@ -16,6 +16,9 @@ class Coordinate:
     def __str__(self):
         return "("+str(self.topLevel)+","+str(self.bottomLevel)+")"
 
+    def __eq__(self,other):
+        return self.topLevel == other.topLevel and self.bottomLevel==other.bottomLevel
+
 # The Board of the game 
 class Board:
     won = [0,0,0,0,0,0,0,0,0];
