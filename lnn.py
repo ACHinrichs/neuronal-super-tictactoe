@@ -4,7 +4,7 @@
 import numpy as np
 import supertictactoe as st
 from supertictactoe import Player, Game, Coordinate, Board
-LOG_LEVEL = 1
+LOG_LEVEL = 0
 
 
 def log(out, level=1):
@@ -82,7 +82,9 @@ class LayerNeuralNetwork():
             # FIrst calculate how the net would move, because it could have been updated
             newMove = self.move(board,playerNumber)
             if not newMove == Coordinate(x,y):
-                # If they are not equal, we have already altered the network a lot, so that every new alteration could make it worse
+                # If they are not equal, we have already altered the network a lot,
+                # so that every new alteration could make it worse
+                log("Do not update net, suggesting different move",1)
                 return
 
             # Create idealize move
@@ -91,6 +93,7 @@ class LayerNeuralNetwork():
             log("update "+str(neurons.shape),2)
             # Propagate the move backwards
             #Iterate backwards over syns
+            newSyn = []
             for layer in self.syn[::-1]:
                 neuronsLower = self.neuronActivation(np.dot(layer.T,neurons))
                 
@@ -98,10 +101,11 @@ class LayerNeuralNetwork():
                 log("update n"+str(neurons.shape),2)
                 log("update l"+str(neuronsLower.shape),2)
                 log(neuronsLower, 3)
-                layer = np.dot(neurons,neuronsLower.T)
+                newSyn.append(layer - np.dot(neurons,neuronsLower.T)*0.5*lost)
                 
                 neurons = neuronsLower
-        
+            self.syn = newSyn[::-1]
+            
     def printNet(self):
         for layer in self.syn:
             print(layer)
@@ -112,15 +116,17 @@ class LayerNeuralNetwork():
 np.random.seed(1)
 
 
-lnn = LayerNeuralNetwork([90, 90*81, 81*81, 81])
+lnn = LayerNeuralNetwork([90, 90*9, 90*9, 81*9, 81*9, 81])
 
 # train Network
+lnn.printNet()
 
-for i in range(100):
+for i in range(500):
     p1 = ComputerPlayer(0,lnn)
     p2 = ComputerPlayer(1,lnn)
     game = Game(p1,p2)
     game.play()
+    print(game.board)
     #print(i)
 
 lnn.printNet()
