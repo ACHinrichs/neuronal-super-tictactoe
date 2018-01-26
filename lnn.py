@@ -11,6 +11,7 @@ def log(out, level=1):
     if level <= LOG_LEVEL:
         print(out)
 
+        
 class ComputerPlayer(Player):
     def __init__(self, aNumber, network):
         self.number = aNumber
@@ -26,6 +27,9 @@ class ComputerPlayer(Player):
         self.nw.updateNet(1, self.moves, self.number)
 
     def move(self, board):
+        if board.lastMove == Coordinate(-1,-1):
+            log("Rand move",3)
+            return Coordinate(np.random.randint(0,9),np.random.randint(0,9))
         c =  self.nw.move(board, self.number);
         self.moves.append([c.topLevel,c.bottomLevel ,board])
         return c;
@@ -78,7 +82,9 @@ class LayerNeuralNetwork():
         return Coordinate( active// 9, active %9)
 
     def updateNet(self, lost, moves, playerNumber):
+        moveNum = 0
         for x,y,board in moves:
+            moveNum=moveNum + 1
             # FIrst calculate how the net would move, because it could have been updated
             newMove = self.move(board,playerNumber)
             if not newMove == Coordinate(x,y):
@@ -94,6 +100,8 @@ class LayerNeuralNetwork():
             # Propagate the move backwards
             #Iterate backwards over syns
             newSyn = []
+            changeFactor = 0.5  
+            penality = (2*lost-1) * moveNum/len(moves)*len(moves)
             for layer in self.syn[::-1]:
                 neuronsLower = self.neuronActivation(np.dot(layer.T,neurons))
                 
@@ -101,7 +109,8 @@ class LayerNeuralNetwork():
                 log("update n"+str(neurons.shape),2)
                 log("update l"+str(neuronsLower.shape),2)
                 log(neuronsLower, 3)
-                newSyn.append(layer - np.dot(neurons,neuronsLower.T)*0.5*lost)
+                newSyn.append(layer - np.dot(neurons,neuronsLower.T)*changeFactor*lost)
+                changeFactor = changeFactor *0.5
                 
                 neurons = neuronsLower
             self.syn = newSyn[::-1]
@@ -116,20 +125,29 @@ class LayerNeuralNetwork():
 np.random.seed(1)
 
 
-lnn = LayerNeuralNetwork([90, 90*9, 90*9, 81*9, 81*9, 81])
+lnn = LayerNeuralNetwork([90, 90*9, 90*9, 90*9, 81*9, 81])
+lnn2 = LayerNeuralNetwork([90, 90*9, 90*9, 90*9, 81*9, 81])
 
 # train Network
 lnn.printNet()
-
-for i in range(500):
+netStart = lnn.syn[:]
+input("ENTER zum starten")
+for i in range(1000):
     p1 = ComputerPlayer(0,lnn)
     p2 = ComputerPlayer(1,lnn)
     game = Game(p1,p2)
     game.play()
-    print(game.board)
+    log(game.board,2)
     #print(i)
 
 lnn.printNet()
+
+changeLogPrio=0
+log("Change of syn:",changeLogPrio)
+i=0
+for layer in netStart:
+    log(lnn.syn[i] - netStart[i],changeLogPrio)
+    i=i+1
 
 #print (nonlin(np.dot([1,1,0], syn0)))
 
